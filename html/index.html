@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Templating</title>
+    <!--<link rel="stylesheet" href="style.css">-->
+    <script type="text/javascript" src="../js/underscore.js"></script>
+    <script type="text/javascript" src="../js/jquery-1.7.2.js"></script>
+    <script type="text/javascript" src="../js/backbone.js"></script>
+    <script type="text/javascript" src="../js/backbone.marionette.js"></script>
+</head>
+<body>
+<div id="app">
+
+
+</div>
+<script id="index-template" type="text/html">
+    <h2>Velkommen til marionette Useradmin</h2>
+    <p2>Demon app skrevet i marionette</p2>
+    <ul>
+        <li><a href="#" id="nav-users-index">Users</a></li>
+        <li><a href="#">Roles</a></li>
+    </ul>
+</script>
+
+<script id="user-layout-template" type="text/html">
+    <div class="row">
+        <h2>Viewing <%=email%></h2>
+    </div>
+    <hr/>
+    <div id="detail" class="col-md-3 well"></div>
+    <div id="summary" class="col-md-8"></div>
+
+</script>  <!--outer view-->
+<script id="summary-template" type="text/html">
+
+    <ul>
+        <li>Ting 1</li>
+        <li>Ting 2</li>
+    </ul>
+
+</script>  <!--inner view-->
+<script id="detail-template" type="text/html">
+    <h2> Detaljer</h2>
+</script>  <!--inner view-->
+
+<script>
+
+    var testData = [
+        {id : 1, email : "sfds@gmail.com"},
+        {id : 2, email : "bbbbb@gmail.com"},
+        {id : 3, email : "cccc@gmail.com"},
+        {id : 4, email : "ddd@gmail.com"},
+    ];
+
+    //DATA
+    var User = Backbone.Model.extend({
+        url: "api/users",
+        validate: function (atts, opts)  {
+            if (!(atts.email && atts.name)) {
+                return "Trenger epost og navn"
+            }
+        },
+        initialize: function () {
+            this.on("invalid", function (m) {
+                alert(m.validationError);
+            });
+        },
+        select: function () {
+            console.log('select function')
+            UserAdmin.trigger("user:selected", this);
+        }
+    });
+
+    var UsersCollection = Backbone.Collection.extend({
+        url : "/api/users",
+        model : User
+    });
+
+    var UserAdmin = new Backbone.Marionette.Application();
+    var AppRouter = Backbone.Router.extend({
+        routes: {
+            "" : "showIndex",
+            "users" : "showUserList",
+            "user/:id" : "showUserDetail"
+
+        },
+        showIndex: function () {
+            console.log('BLABLABLA');
+            UserAdmin.AppController.showIndex();
+        },
+
+        showUserList: function () {
+            console.log('TRALALALA');
+            UserAdmin.AppController.showUserList();
+        },
+        showUserDetail: function (id) {
+            var user = UserAdmin.Users.get(id);
+            user.select();
+//            console.log('NANANA');
+//            UserAdmin.AppController.showUserDetail(id);
+        }
+    });
+
+    var AppController = Backbone.Marionette.Controller.extend({
+        showIndex : function () {
+            UserAdmin.mainReagion.show(new IndexView());
+        },
+        showUserList: function () {
+            var userListView = new UserListView({collection:UserAdmin.Users});
+            UserAdmin.mainReagion.show(userListView);
+            UserAdmin.Router.navigate("users"); //Denne oppdaterer bare url, ikke noe annet
+        },
+        showUserDetail: function (user) {
+            var user = UserAdmin.Users.get(user.id);
+            console.log('user : ' + JSON.stringify(user));
+            var layout = new UserLayoutView({model : user});
+            UserAdmin.mainReagion.show(layout);
+
+            layout.summary.show(new UserSummaryView({model: user}));
+            layout.detail.show(new UserDetailView({model : user}));
+            UserAdmin.Router.navigate("user/" + id); //Denne oppdaterer bare url, ikke noe annet
+        }
+    });
+
+    UserAdmin.addInitializer( function () {
+
+
+    //Når vi definerer en region blir det lagt ut rett på objektet
+    UserAdmin.addRegions({
+       mainReagion : "#app"  //Jquery selecter for å hente app div
+    });
+
+        //inits
+        UserAdmin.AppController = new AppController();
+        UserAdmin.Router = new AppRouter();
+        UserAdmin.Users = new UsersCollection(testData);
+
+
+        //events
+        UserAdmin.on("user:selected", function (user) {
+           UserAdmin.AppController.showUserDetail(user);
+        });
+
+        //starts
+        Backbone.history.start();
+    });
+
+    //Bruker itemview hvis det er et view du bare tenker bruke en gang, kan bruke bare view istedenfor, men da må det opprettes
+    var IndexView = Backbone.Marionette.ItemView.extend({
+        template : "#index-template",
+        events: {
+            "click #nav-users-index" : "showUserList"
+        },
+        showUserList: function (ev) {
+            ev.preventDefault();
+            UserAdmin.AppController.showUserList();
+        }
+    });
+
+    var UserLayoutView = Backbone.Marionette.LayoutView.extend({
+        template : "#user-layout-template",
+       regions : {
+           summary: "#summary",
+           detail: "#detail"
+       }
+    });
+
+    var UserSummaryView = Backbone.Marionette.ItemView.extend({
+        template : "#summary-template"
+    });
+
+    var UserDetailView = Backbone.Marionette.ItemView.extend({
+        template : "#detail-template"
+    });
+
+    var UserItemView = Backbone.Marionette.ItemView.extend({
+       tagName: "tr",
+       template: _.template("<td><a href='#'><%=email%></a></td>"),
+        events: {
+            "click a" : "showUserDetail"
+        },
+        showUserDetail: function (ev) {
+            ev.preventDefault();
+//            UserAdmin.AppController.showUserDetail(this.model.id);
+            console.log('Useritemview' + JSON.stringify(this.model));
+            this.model.select();
+        }
+    });
+
+    var UserListView = Backbone.Marionette.CollectionView.extend({
+        tagName: "table",
+        className: "table table-striped",
+        childView: UserItemView,
+        onBeforeRender: function () {
+            this.$el.append("<h2> User List </h2>");
+        }
+    });
+
+    UserAdmin.start();
+
+</script>
+</body>
+</html>
