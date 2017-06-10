@@ -97,8 +97,6 @@
         showUserDetail: function (id) {
             var user = UserAdmin.Users.get(id);
             user.select();
-//            console.log('NANANA');
-//            UserAdmin.AppController.showUserDetail(id);
         }
     });
 
@@ -182,8 +180,6 @@
         },
         showUserDetail: function (ev) {
             ev.preventDefault();
-//            UserAdmin.AppController.showUserDetail(this.model.id);
-            console.log('Useritemview' + JSON.stringify(this.model));
             this.model.select();
         }
     });
