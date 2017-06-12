@@ -8,6 +8,11 @@
     <script type="text/javascript" src="../js/jquery-1.7.2.js"></script>
     <script type="text/javascript" src="../js/backbone.js"></script>
     <script type="text/javascript" src="../js/backbone.marionette.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/breadcrumb/views.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/breadcrumb/model.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/breadcrumb/index.js"></script>
+
+
 </head>
 <body>
 
@@ -90,17 +95,15 @@
         url : "/api/users",
         model : User
     });
-    var BreadCrumb = Backbone.Model.extend({
-        select : function () {
-            this.trigger("breadcrumb:selected", this);
-        }
-    });
-    var BreadCrumbCollection = Backbone.Collection.extend({
-        model: BreadCrumb
-    });
+
 
     //App objects
     var UserAdmin = new Backbone.Marionette.Application();
+    UserAdmin.addRegions({
+        mainReagion : "#app",  //Jquery selecter for å hente app div
+        navRegion : "#breadcrumbs"
+    });
+
     var AppRouter = Backbone.Router.extend({
         routes: {
             "" : "showIndex",
@@ -149,20 +152,23 @@
             list: {title: "User Listing", trigger: "user:listing:requested"}
         }
 
+        var breadCrumbs = new BreadCrumbModule(UserAdmin);
+        breadCrumbs.load(UserAdmin.navRegion, {title: "Home"});
+
         //events
         UserAdmin.on("user:selected", function (user) {
             UserAdmin.AppController.showUserDetail(user);
-            UserAdmin.BreadCrumbs.reset([crumbs.home, crumbs.list, { title: user.get("email")}]);
+            breadCrumbs.setCrumbs([crumbs.home, crumbs.list, { title: user.get("email")}]);
         });
 
         UserAdmin.on("user:listing:requested", function () {
             UserAdmin.AppController.showUserList();
-            UserAdmin.BreadCrumbs.reset([crumbs.home, crumbs.list]);
+            breadCrumbs.setCrumbs([crumbs.home, crumbs.list]);
         });
 
         UserAdmin.on("index:requested", function () {
             UserAdmin.AppController.showIndex();
-            UserAdmin.BreadCrumbs.reset(crumbs.home);
+            breadCrumbs.setCrumbs(crumbs.home);
         });
 
 
@@ -174,23 +180,15 @@
 
 
     //Når vi definerer en region blir det lagt ut rett på objektet
-    UserAdmin.addRegions({
-       mainReagion : "#app",  //Jquery selecter for å hente app div
-        navRegion : "#breadcrumbs"
-    });
+
 
         //inits
         UserAdmin.AppController = new AppController();
 //        UserAdmin.BreadCrumbController = new BreadCrumbController();
         UserAdmin.Router = new AppRouter();
         UserAdmin.Users = new UsersCollection(testData);
-        UserAdmin.BreadCrumbs = new BreadCrumbCollection({title: "Home"});
-        UserAdmin.navRegion.show(new BreadCrumbList({collection : UserAdmin.BreadCrumbs}));
 
-        //TODO Move this
-        UserAdmin.BreadCrumbs.on("breadcrumb:selected", function (crumb) {
-            UserAdmin.trigger(crumb.get("trigger"));
-        });
+
 
         //starts
         Backbone.history.start();
@@ -243,26 +241,7 @@
         }
     });
 
-    var BreadCrumbView = Backbone.Marionette.ItemView.extend({
-        tagName: "li",
-        template: _.template("<a href=#><%=title%></a>"),
-        events: {
-            "click a" : "fireTrigger"
-        },
-        fireTrigger: function (ev) {
-            ev.preventDefault();
-            console.log(this.model);
-            console.log('test ' +  typeof this.model );  //Er ikke instance of breadcrumb
-            this.model.select();
 
-        }
-    });
-
-    var BreadCrumbList = Backbone.Marionette.CollectionView.extend({
-        tagName: "ol",
-        className : "breadcrumb",
-        childView : BreadCrumbView
-    });
 
     UserAdmin.start();
 
