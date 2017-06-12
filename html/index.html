@@ -86,10 +86,17 @@
             UserAdmin.trigger("user:selected", this);
         }
     });
-
     var UsersCollection = Backbone.Collection.extend({
         url : "/api/users",
         model : User
+    });
+    var BreadCrumb = Backbone.Model.extend({
+        select : function () {
+            this.trigger("breadcrumb:selected", this);
+        }
+    });
+    var BreadCrumbCollection = Backbone.Collection.extend({
+        model: BreadCrumb
     });
 
     //App objects
@@ -132,44 +139,34 @@
             UserAdmin.Router.navigate("user/" + user.id); //Denne oppdaterer bare url, ikke noe annet
         }
     });
-    var BreadCrumbController = Backbone.Marionette.Controller.extend({
-        showHome: function () {
-            var crumbs = new Backbone.Collection({title: "Home"});
-            this.renderView(crumbs);
 
-        },
-        showUserList: function () {
-            var crumbs = new Backbone.Collection([{title: "Home"}, {title: "User Listing"}]);
-            this.renderView(crumbs);
-        },
-        showUserDetail: function (user) {
-            var crumbs = new Backbone.Collection([{title: "Home"}, {title: "User Listing"}, {title: user.get("email")}]);
-            this.renderView(crumbs);
-        },
-        renderView: function (crumbs) {
-            var breadCrumbsView = new BreadCrumbList({collection: crumbs});
-            UserAdmin.navRegion.show(breadCrumbsView);
-        }
-    });
 
     //Events
     UserAdmin.addInitializer(function () {
 
+        var crumbs = {
+            home: {title: "Home", trigger: "index:requested"},
+            list: {title: "User Listing", trigger: "user:listing:requested"}
+        }
+
         //events
         UserAdmin.on("user:selected", function (user) {
             UserAdmin.AppController.showUserDetail(user);
-            UserAdmin.BreadCrumbController.showUserDetail(user);
+            UserAdmin.BreadCrumbs.reset([crumbs.home, crumbs.list, { title: user.get("email")}]);
         });
 
         UserAdmin.on("user:listing:requested", function () {
             UserAdmin.AppController.showUserList();
-            UserAdmin.BreadCrumbController.showUserList();
+            UserAdmin.BreadCrumbs.reset([crumbs.home, crumbs.list]);
         });
 
         UserAdmin.on("index:requested", function () {
             UserAdmin.AppController.showIndex();
-            UserAdmin.BreadCrumbController.showHome();
+            UserAdmin.BreadCrumbs.reset(crumbs.home);
         });
+
+
+
     });
 
     //Initializer
@@ -184,11 +181,16 @@
 
         //inits
         UserAdmin.AppController = new AppController();
-        UserAdmin.BreadCrumbController = new BreadCrumbController();
+//        UserAdmin.BreadCrumbController = new BreadCrumbController();
         UserAdmin.Router = new AppRouter();
         UserAdmin.Users = new UsersCollection(testData);
+        UserAdmin.BreadCrumbs = new BreadCrumbCollection({title: "Home"});
+        UserAdmin.navRegion.show(new BreadCrumbList({collection : UserAdmin.BreadCrumbs}));
 
-
+        //TODO Move this
+        UserAdmin.BreadCrumbs.on("breadcrumb:selected", function (crumb) {
+            UserAdmin.trigger(crumb.get("trigger"));
+        });
 
         //starts
         Backbone.history.start();
@@ -207,7 +209,6 @@
             UserAdmin.trigger("user:listing:requested");
         }
     });
-
     var UserLayoutView = Backbone.Marionette.LayoutView.extend({
         template : "#user-layout-template",
        regions : {
@@ -215,15 +216,12 @@
            detail: "#detail"
        }
     });
-
     var UserSummaryView = Backbone.Marionette.ItemView.extend({
         template : "#summary-template"
     });
-
     var UserDetailView = Backbone.Marionette.ItemView.extend({
         template : "#detail-template"
     });
-
     var UserItemView = Backbone.Marionette.ItemView.extend({
        tagName: "tr",
        template: _.template("<td><a href='#'><%=email%></a></td>"),
@@ -232,10 +230,10 @@
         },
         showUserDetail: function (ev) {
             ev.preventDefault();
+            console.log('typeUser ::' + typeof this.model);
             this.model.select();
         }
     });
-
     var UserListView = Backbone.Marionette.CollectionView.extend({
         tagName: "table",
         className: "table table-striped",
@@ -245,11 +243,19 @@
         }
     });
 
-    var BreadCrumbCollection = Backbone.Collection.extend({});
-
     var BreadCrumbView = Backbone.Marionette.ItemView.extend({
         tagName: "li",
-        template: _.template("<a href=#><%=title%></a>")
+        template: _.template("<a href=#><%=title%></a>"),
+        events: {
+            "click a" : "fireTrigger"
+        },
+        fireTrigger: function (ev) {
+            ev.preventDefault();
+            console.log(this.model);
+            console.log('test ' +  typeof this.model );  //Er ikke instance of breadcrumb
+            this.model.select();
+
+        }
     });
 
     var BreadCrumbList = Backbone.Marionette.CollectionView.extend({
