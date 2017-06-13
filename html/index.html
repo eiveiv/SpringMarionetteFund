@@ -11,11 +11,17 @@
     <script type="text/javascript" src="../Scripts/apps/user-admin/breadcrumb/views.js"></script>
     <script type="text/javascript" src="../Scripts/apps/user-admin/breadcrumb/model.js"></script>
     <script type="text/javascript" src="../Scripts/apps/user-admin/breadcrumb/index.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/user/router.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/user/model.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/user/views.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/user/controller.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/home/controller.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/home/view.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/home/router.js"></script>
 
 
 </head>
 <body>
-
 
 
 <div class="row">
@@ -67,80 +73,20 @@
 <script>
 
     var testData = [
-        {id : 1, email : "sfds@gmail.com"},
-        {id : 2, email : "bbbbb@gmail.com"},
-        {id : 3, email : "cccc@gmail.com"},
-        {id : 4, email : "ddd@gmail.com"},
+        {id: 1, email: "sfds@gmail.com"},
+        {id: 2, email: "bbbbb@gmail.com"},
+        {id: 3, email: "cccc@gmail.com"},
+        {id: 4, email: "ddd@gmail.com"},
     ];
 
     //DATA
-    var User = Backbone.Model.extend({
-        url: "api/users",
-        validate: function (atts, opts)  {
-            if (!(atts.email && atts.name)) {
-                return "Trenger epost og navn"
-            }
-        },
-        initialize: function () {
-            this.on("invalid", function (m) {
-                alert(m.validationError);
-            });
-        },
-        select: function () {
-            console.log('select function')
-            UserAdmin.trigger("user:selected", this);
-        }
-    });
-    var UsersCollection = Backbone.Collection.extend({
-        url : "/api/users",
-        model : User
-    });
 
 
     //App objects
     var UserAdmin = new Backbone.Marionette.Application();
     UserAdmin.addRegions({
-        mainReagion : "#app",  //Jquery selecter for å hente app div
-        navRegion : "#breadcrumbs"
-    });
-
-    var AppRouter = Backbone.Router.extend({
-        routes: {
-            "" : "showIndex",
-            "users" : "showUserList",
-            "user/:id" : "showUserDetail"
-
-        },
-        showIndex: function () {
-            UserAdmin.trigger("index:requested");
-        },
-
-        showUserList: function () {
-            UserAdmin.trigger("user:listing:requested");
-        },
-        showUserDetail: function (id) {
-            var user = UserAdmin.Users.get(id);
-            user.select();
-        }
-    });
-    var AppController = Backbone.Marionette.Controller.extend({
-        showIndex : function () {
-            UserAdmin.mainReagion.show(new IndexView());
-        },
-        showUserList: function () {
-            var userListView = new UserListView({collection:UserAdmin.Users});
-            UserAdmin.mainReagion.show(userListView);
-            UserAdmin.Router.navigate("users"); //Denne oppdaterer bare url, ikke noe annet
-        },
-        showUserDetail: function (user) {
-            var user = UserAdmin.Users.get(user.id);
-            var layout = new UserLayoutView({model : user});
-            UserAdmin.mainReagion.show(layout);
-
-            layout.summary.show(new UserSummaryView({model: user}));
-            layout.detail.show(new UserDetailView({model : user}));
-            UserAdmin.Router.navigate("user/" + user.id); //Denne oppdaterer bare url, ikke noe annet
-        }
+        mainReagion: "#app",  //Jquery selecter for å hente app div
+        navRegion: "#breadcrumbs"
     });
 
 
@@ -157,12 +103,12 @@
 
         //events
         UserAdmin.on("user:selected", function (user) {
-            UserAdmin.AppController.showUserDetail(user);
-            breadCrumbs.setCrumbs([crumbs.home, crumbs.list, { title: user.get("email")}]);
+            UserAdmin.UserController.showUserDetail(user);
+            breadCrumbs.setCrumbs([crumbs.home, crumbs.list, {title: user.get("email")}]);
         });
 
         UserAdmin.on("user:listing:requested", function () {
-            UserAdmin.AppController.showUserList();
+            UserAdmin.UserController.showUserList();
             breadCrumbs.setCrumbs([crumbs.home, crumbs.list]);
         });
 
@@ -172,22 +118,21 @@
         });
 
 
-
     });
 
     //Initializer
-    UserAdmin.addInitializer( function () {
+    UserAdmin.addInitializer(function () {
 
 
-    //Når vi definerer en region blir det lagt ut rett på objektet
+        //Når vi definerer en region blir det lagt ut rett på objektet
 
 
         //inits
         UserAdmin.AppController = new AppController();
-//        UserAdmin.BreadCrumbController = new BreadCrumbController();
-        UserAdmin.Router = new AppRouter();
+        UserAdmin.UserRouter = new UserRouter();
+        UserAdmin.HomeRouter = new HomeRouter();
+        UserAdmin.UserController = new UserController();
         UserAdmin.Users = new UsersCollection(testData);
-
 
 
         //starts
@@ -195,52 +140,7 @@
     });
 
 
-    //VIEWS
     //Bruker itemview hvis det er et view du bare tenker bruke en gang, kan bruke bare view istedenfor, men da må det opprettes
-    var IndexView = Backbone.Marionette.ItemView.extend({
-        template : "#index-template",
-        events: {
-            "click #nav-users-index" : "showUserList"
-        },
-        showUserList: function (ev) {
-            ev.preventDefault();
-            UserAdmin.trigger("user:listing:requested");
-        }
-    });
-    var UserLayoutView = Backbone.Marionette.LayoutView.extend({
-        template : "#user-layout-template",
-       regions : {
-           summary: "#summary",
-           detail: "#detail"
-       }
-    });
-    var UserSummaryView = Backbone.Marionette.ItemView.extend({
-        template : "#summary-template"
-    });
-    var UserDetailView = Backbone.Marionette.ItemView.extend({
-        template : "#detail-template"
-    });
-    var UserItemView = Backbone.Marionette.ItemView.extend({
-       tagName: "tr",
-       template: _.template("<td><a href='#'><%=email%></a></td>"),
-        events: {
-            "click a" : "showUserDetail"
-        },
-        showUserDetail: function (ev) {
-            ev.preventDefault();
-            console.log('typeUser ::' + typeof this.model);
-            this.model.select();
-        }
-    });
-    var UserListView = Backbone.Marionette.CollectionView.extend({
-        tagName: "table",
-        className: "table table-striped",
-        childView: UserItemView,
-        onBeforeRender: function () {
-            this.$el.append("<h2> User List </h2>");
-        }
-    });
-
 
 
     UserAdmin.start();
