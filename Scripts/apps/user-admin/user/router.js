@@ -13,5 +13,5 @@ var UserRouter = Backbone.Router.extend({
     showUserDetail: function (id) {
         var user = UserAdmin.Users.get(id);
         user.select();
-    }
+    },
 });

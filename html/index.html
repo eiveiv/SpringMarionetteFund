@@ -18,6 +18,8 @@
     <script type="text/javascript" src="../Scripts/apps/user-admin/home/controller.js"></script>
     <script type="text/javascript" src="../Scripts/apps/user-admin/home/view.js"></script>
     <script type="text/javascript" src="../Scripts/apps/user-admin/home/router.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/home/index.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/user/index.js"></script>
 
 
 </head>
@@ -100,43 +102,25 @@
 
         var breadCrumbs = new BreadCrumbModule(UserAdmin);
         breadCrumbs.load(UserAdmin.navRegion, {title: "Home"});
-
+        var user = new UserModule({app : UserAdmin, initialData : testData });
+        var home = new HomeModule({app : UserAdmin});
         //events
-        UserAdmin.on("user:selected", function (user) {
-            UserAdmin.UserController.showUserDetail(user);
-            breadCrumbs.setCrumbs([crumbs.home, crumbs.list, {title: user.get("email")}]);
+        UserAdmin.on("user:selected", function (selectedUser) {
+            user.controller.showUserDetail(selectedUser);
+            breadCrumbs.setCrumbs([crumbs.home, crumbs.list, {title: selectedUser.get("email")}]);
         });
 
         UserAdmin.on("user:listing:requested", function () {
-            UserAdmin.UserController.showUserList();
+            user.controller.showUserList();
             breadCrumbs.setCrumbs([crumbs.home, crumbs.list]);
         });
 
         UserAdmin.on("index:requested", function () {
-            UserAdmin.AppController.showIndex();
+            home.controller.showIndex();
             breadCrumbs.setCrumbs(crumbs.home);
         });
-
-
-    });
-
-    //Initializer
-    UserAdmin.addInitializer(function () {
-
-
-        //Når vi definerer en region blir det lagt ut rett på objektet
-
-
-        //inits
-        UserAdmin.AppController = new AppController();
-        UserAdmin.UserRouter = new UserRouter();
-        UserAdmin.HomeRouter = new HomeRouter();
-        UserAdmin.UserController = new UserController();
-        UserAdmin.Users = new UsersCollection(testData);
-
-
-        //starts
         Backbone.history.start();
+
     });
 
 

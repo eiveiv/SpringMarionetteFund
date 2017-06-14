@@ -1,9 +1,13 @@
 /**
  * Created by Eivind on 13.06.2017.
  */
-var AppController = Backbone.Marionette.Controller.extend({
+var HomeController = Backbone.Marionette.Controller.extend({
+    initialize : function (options) {
+        this.module = options.module;
+    },
+    
     showIndex : function () {
-        UserAdmin.mainReagion.show(new IndexView());
-        UserAdmin.HomeRouter.navigate("");
+        this.module.app.mainReagion.show(new IndexView());
+        this.module.router.navigate("");
     }
 });
