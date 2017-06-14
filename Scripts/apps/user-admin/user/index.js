@@ -13,7 +13,7 @@ var UserModule = function (setttings) {
     module.collection = new UsersCollection(initialData);
 
     //router
-    module.router = new UserRouter();
+    module.router = new UserRouter({module : module});
 
     //controller
     module.controller = new UserController({module : module});

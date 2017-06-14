@@ -1,28 +1,33 @@
 /**
  * Created by Eivind on 12.06.2017.
  */
-var BreadCrumbModule = function (app) {
-    var module = {};
+var BreadCrumbModule = function (settings) {
 
-    var collection = {};
+    var initialData = settings.initialData || [];
+    var module = {};
+    var collection = new BreadCrumbCollection(initialData);
+    var region = settings.region;
+    var view = new BreadCrumbList({collection : collection});
+
+    module.app = settings.app || {};
     module.setCrumbs = function (data) {
         collection.reset(data);
     };
 
-    module.load = function (region, initialData) {
-        initialData || (initialData = {});
-        collection = new BreadCrumbCollection(initialData);
+    //events
+    collection.on("breadcrumb:selected", function (crumb) {
+        module.app.trigger(crumb.get("trigger"));
+    });
 
-        collection.on("breadcrumb:selected", function (crumb) {
-           app.trigger(crumb.get("trigger"));
-        });
-
-        var view = new BreadCrumbList({collection: collection});
-        region.show(view);
+    module.show = function () {
+        if (region) {
+            region.show(view);
+        } else {
+            throw "Cant show the breadcrumbs with a region specified"
+        }
     };
 
-    // UserAdmin.BreadCrumbs = new BreadCrumbCollection({title: "Home"});
-    // UserAdmin.navRegion.show(new BreadCrumbList({collection : UserAdmin.BreadCrumbs}));
+
     return module;
 
 };

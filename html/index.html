@@ -20,6 +20,7 @@
     <script type="text/javascript" src="../Scripts/apps/user-admin/home/router.js"></script>
     <script type="text/javascript" src="../Scripts/apps/user-admin/home/index.js"></script>
     <script type="text/javascript" src="../Scripts/apps/user-admin/user/index.js"></script>
+    <script type="text/javascript" src="../Scripts/apps/user-admin/index.js"></script>
 
 
 </head>
@@ -81,53 +82,10 @@
         {id: 4, email: "ddd@gmail.com"},
     ];
 
-    //DATA
-
-
-    //App objects
-    var UserAdmin = new Backbone.Marionette.Application();
-    UserAdmin.addRegions({
-        mainReagion: "#app",  //Jquery selecter for å hente app div
-        navRegion: "#breadcrumbs"
+    $(function () {
+        UserAdmin.start();
     });
 
-
-    //Events
-    UserAdmin.addInitializer(function () {
-
-        var crumbs = {
-            home: {title: "Home", trigger: "index:requested"},
-            list: {title: "User Listing", trigger: "user:listing:requested"}
-        }
-
-        var breadCrumbs = new BreadCrumbModule(UserAdmin);
-        breadCrumbs.load(UserAdmin.navRegion, {title: "Home"});
-        var user = new UserModule({app : UserAdmin, initialData : testData });
-        var home = new HomeModule({app : UserAdmin});
-        //events
-        UserAdmin.on("user:selected", function (selectedUser) {
-            user.controller.showUserDetail(selectedUser);
-            breadCrumbs.setCrumbs([crumbs.home, crumbs.list, {title: selectedUser.get("email")}]);
-        });
-
-        UserAdmin.on("user:listing:requested", function () {
-            user.controller.showUserList();
-            breadCrumbs.setCrumbs([crumbs.home, crumbs.list]);
-        });
-
-        UserAdmin.on("index:requested", function () {
-            home.controller.showIndex();
-            breadCrumbs.setCrumbs(crumbs.home);
-        });
-        Backbone.history.start();
-
-    });
-
-
-    //Bruker itemview hvis det er et view du bare tenker bruke en gang, kan bruke bare view istedenfor, men da må det opprettes
-
-
-    UserAdmin.start();
 
 </script>
 </body>
