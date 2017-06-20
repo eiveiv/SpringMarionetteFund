@@ -3,20 +3,22 @@
  */
 var UserRouter = Backbone.Router.extend({
 
-    initialize : function (options) {
+    initialize: function (options) {
         this.module = options.module;
     },
 
     routes: {
-        "users" : "showUserList",
-        "user/:id" : "showUserDetail"
+        "users": "showUserList",
+        "user/:id": "showUserDetail"
 
     },
     showUserList: function () {
         this.module.app.trigger("user:listing:requested");
     },
     showUserDetail: function (id) {
-        var user = this.module.collection.get(id);
-        user.select();
+        var user = new User({id: id});
+        user.fetch().then(function () {
+            user.select();
+        });
     },
 });

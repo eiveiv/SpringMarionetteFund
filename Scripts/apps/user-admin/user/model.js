@@ -1,5 +1,5 @@
 var User = Backbone.Model.extend({
-    url: "api/users",
+    urlRoot: "http://localhost:8080/user?id=",
     validate: function (atts, opts)  {
         if (!(atts.email && atts.name)) {
             return "Trenger epost og navn"
@@ -16,6 +16,6 @@ var User = Backbone.Model.extend({
     }
 });
 var UsersCollection = Backbone.Collection.extend({
-    url : "/api/users",
+    url : "http://localhost:8080/users",
     model : User
 });

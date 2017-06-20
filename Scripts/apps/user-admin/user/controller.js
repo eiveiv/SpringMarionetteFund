@@ -11,6 +11,7 @@ var UserController = Backbone.Marionette.Controller.extend({
         var userListView = new UserListView({collection: this.module.collection});
         this.module.app.mainReagion.show(userListView);
         this.module.router.navigate("users"); //Denne oppdaterer bare url, ikke noe annet
+        this.module.collection.fetch();
     },
     showUserDetail: function (user) {
         var layout = new UserLayoutView({model: user});

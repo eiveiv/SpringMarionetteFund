@@ -15,7 +15,7 @@ UserAdmin.addInitializer(function () {
         region: UserAdmin.navRegion,
         initialData: {title: "Home"}
     });
-    UserAdmin.user = new UserModule({app: UserAdmin, initialData: testData});
+    UserAdmin.user = new UserModule({app: UserAdmin});
     UserAdmin.home = new HomeModule({app: UserAdmin});
 });
 

@@ -22,11 +22,14 @@ public class UserRest {
         return "Velkommen";
     }
 
+    @CrossOrigin(origins = "http://localhost:63342")
     @GetMapping("/users")
     public String getUsers () {
+        System.out.println("Kom inn i users rest!");
         return gson.toJson(userService.getUsers());
     }
 
+    @CrossOrigin(origins = "http://localhost:63342")
     @GetMapping("/user")
     public String getUser(@RequestParam(value = "id", required = true) String id) {
         return gson.toJson(userService.getUser(id));
