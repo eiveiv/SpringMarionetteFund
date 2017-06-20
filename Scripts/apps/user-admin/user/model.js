@@ -11,8 +11,14 @@ var User = Backbone.Model.extend({
         });
     },
     select: function () {
-        console.log('select function')
         UserAdmin.trigger("user:selected", this);
+    },
+    parse : function (m) {
+        m.fullName = m.name;
+        // m.gravatarUrl = function (size) {
+        //     return "http://gravatar.come/avatar/" + hex_md5(m.email) + "?s?" + size;
+        // }
+        return m;
     }
 });
 var UsersCollection = Backbone.Collection.extend({

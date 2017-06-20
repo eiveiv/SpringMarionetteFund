@@ -8,6 +8,7 @@
     <script type="text/javascript" src="../js/jquery-1.7.2.js"></script>
     <script type="text/javascript" src="../js/backbone.js"></script>
     <script type="text/javascript" src="../js/backbone.marionette.js"></script>
+    <script type="text/javascript" src="../js/md5.js"></script>
     <script type="text/javascript" src="../Scripts/apps/user-admin/breadcrumb/views.js"></script>
     <script type="text/javascript" src="../Scripts/apps/user-admin/breadcrumb/model.js"></script>
     <script type="text/javascript" src="../Scripts/apps/user-admin/breadcrumb/index.js"></script>
@@ -54,32 +55,30 @@
 
 <script id="user-layout-template" type="text/html">
     <div class="row">
-        <h2>Viewing <%=email%></h2>
-    </div>
-    <hr/>
     <div id="detail" class="col-md-3 well"></div>
     <div id="summary" class="col-md-8"></div>
-
+    </div>
 </script>  <!--outer view-->
 <script id="summary-template" type="text/html">
 
     <ul>
-        <li>Ting 1</li>
-        <li>Ting 2</li>
+        <li>
+            <%=email%>
+        </li>
+        <li><%=age%></li>
     </ul>
 
 </script>  <!--inner view-->
 <script id="detail-template" type="text/html">
-    <h2> Detaljer</h2>
+    <h2> <%=fullName%></h2>
+
 </script>  <!--inner view-->
 
 <script>
 
-
     $(function () {
         UserAdmin.start();
     });
-
 
 </script>
 </body>

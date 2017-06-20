@@ -22,8 +22,8 @@ public class UserService {
 
     public List<User> getUsers() {
         List<User> users = new ArrayList<User>();
-        users.add(new User(1, "påsan@gmail.com", "påsan", 1));
-        users.add(new User(2, "hansen@gmail.com", "hansen", 2));
+        users.add(new User(1, "påsan@gmail.com", "påsan", 35));
+        users.add(new User(2, "hansen@gmail.com", "hansen", 33));
 
         return users;
     }
