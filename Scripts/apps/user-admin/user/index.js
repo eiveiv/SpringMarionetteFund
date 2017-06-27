@@ -11,12 +11,17 @@ var UserModule = function (setttings) {
     module.app = setttings.app || {};
     //collection
     module.collection = new UsersCollection(initialData);
+    module.rolecollection = new RolesCollection(initialData);
 
     //router
     module.router = new UserRouter({module : module});
 
+    module.rolerouter = new RoleRouter({module : module});
+
     //controller
     module.controller = new UserController({module : module});
+
+    module.rolecontroller = new RoleController({module : module});
 
     return module;
 };

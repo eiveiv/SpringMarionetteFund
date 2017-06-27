@@ -48,11 +48,23 @@ UserAdmin.addInitializer(function () {
 
 
     UserAdmin.on("user:selected", function (selectedUser) {
+        console.log('selected user' + selectedUser);
         UserAdmin.user.controller.showUserDetail(selectedUser);
     });
 
     UserAdmin.on("user:listing:requested", function () {
         UserAdmin.user.controller.showUserList();
+    });
+
+
+    UserAdmin.on("role:selected", function (selectedUser) {
+        console.log('selected user' + selectedUser);
+        UserAdmin.user.rolecontroller.showRoleInfo(selectedUser);
+    });
+
+    UserAdmin.on("role:listing:requested", function () {
+        console.log("kom inn i on")
+        UserAdmin.user.rolecontroller.showRolesList();
     });
 
 });

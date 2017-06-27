@@ -13,8 +13,12 @@ var User = Backbone.Model.extend({
     select: function () {
         UserAdmin.trigger("user:selected", this);
     },
-    parse : function (m) {
+    parse : function (m) {   //pase legger til verdier på modellen når den blir instansiert
         m.fullName = m.name;
+        m.createdDateString = moment(m.createdDate.year +""+ m.createdDate.month +""+ m.createdDate.day,"YYYYMMDD").format();
+
+        // console.log(m.createdDate.year +""+ m.createdDate.month +""+ m.createdDate.day);
+        // m.blahblah = m.lala;
         // m.gravatarUrl = function (size) {
         //     return "http://gravatar.come/avatar/" + hex_md5(m.email) + "?s?" + size;
         // }

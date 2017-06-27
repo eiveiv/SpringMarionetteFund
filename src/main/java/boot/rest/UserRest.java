@@ -1,5 +1,6 @@
 package boot.rest;
 
+import boot.model.User;
 import boot.service.UserService;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,11 @@ public class UserRest {
     @CrossOrigin(origins = "http://localhost:63342")
     @GetMapping("/user")
     public String getUser(@RequestParam(value = "id", required = true) String id) {
-        return gson.toJson(userService.getUser(id));
+        User user = userService.getUser(id);
+        System.out.println("User :  " + user.toString());
+        System.out.println("Created :  " + user.getCreatedDate());
+        String s = gson.toJson(user);
+        return s;
     }
 
 
